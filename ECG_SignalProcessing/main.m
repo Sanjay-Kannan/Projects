@@ -1,0 +1,22 @@
+%% ECG Signal Processing and Analysis Using MATLAB
+% Analyze a real ECG exported to CSV/MAT. No synthetic data are substituted.
+clear;close all;clc;root=fileparts(mfilename('fullpath'));addpath(genpath(fullfile(root,'src')));addpath(genpath(fullfile(root,'filters')));
+cfg=struct('recordFile',fullfile(root,'data','record.csv'),'channel',1,'fs',360,'timeWindow',[0 10],'lineFrequency',60,'baselineCutoff',0.5,'notchQ',35,'lowpassCutoff',40,'filterOrder',4,'integrationWindow',0.150,'refractoryPeriod',0.250,'thresholdFraction',0.25,'matchTolerance',0.150,'referenceFile',fullfile(root,'data','reference_peaks.csv'),'resultsDir',fullfile(root,'results'));
+if ~isfile(cfg.recordFile),error('ECG:MissingData','Place ECG data at %s; see data/README.md.',cfg.recordFile);end
+[x,fs,meta]=loadECGData(cfg.recordFile,cfg.fs,cfg.channel);cfg.fs=fs;
+offset=0;if ~isempty(cfg.timeWindow),ix=max(1,floor(cfg.timeWindow(1)*fs)+1):min(numel(x),ceil(cfg.timeWindow(2)*fs));offset=ix(1)-1;x=x(ix);end
+fprintf('File %s | Fs %.2f Hz | %.2f s | %d samples | range %.4g to %.4g %s\n',meta.name,fs,numel(x)/fs,numel(x),min(x),max(x),meta.units);if ~exist(cfg.resultsDir,'dir'),mkdir(cfg.resultsDir);end
+fig=figure('Name','Raw ECG');plot((0:numel(x)-1)/fs,x);grid on;xlabel('Time (s)');ylabel('Amplitude (mV)');title('Raw ECG');saveas(fig,fullfile(cfg.resultsDir,'01_raw_ecg.png'));
+[f0,a0]=computeFFT(x,fs);fig=figure('Name','Raw spectrum');plot(f0,a0);xlim([0 fs/2]);grid on;xlabel('Frequency (Hz)');ylabel('Amplitude');title('Raw ECG FFT');saveas(fig,fullfile(cfg.resultsDir,'02_raw_fft.png'));
+[y,s,filters]=preprocessECG(x,fs,cfg);signals={x,s.baseline,s.notch,y};labels={'Raw','Baseline corrected','Notch filtered','Final filtered'};
+fig=figure('Name','Pipeline stages');tiledlayout(4,1);for k=1:4,nexttile;plot((0:numel(x)-1)/fs,signals{k});grid on;ylabel('mV');title(labels{k});end;xlabel('Time (s)');saveas(fig,fullfile(cfg.resultsDir,'03_pipeline.png'));
+fig=figure('Name','Filter response');tiledlayout(3,2);for k=1:3,[h,w]=freqz(filters(k).b,filters(k).a,1024,fs);nexttile;plot(w,20*log10(max(abs(h),1e-8)));grid on;ylabel('Magnitude (dB)');title(filters(k).name);nexttile;plot(w,unwrap(angle(h)));grid on;ylabel('Phase (rad)');title([filters(k).name ' phase']);end;xlabel('Frequency (Hz)');saveas(fig,fullfile(cfg.resultsDir,'04_filter_response.png'));
+[f1,a1]=computeFFT(y,fs);fig=figure('Name','FFT comparison');plot(f0,a0,'DisplayName','Raw');hold on;plot(f1,a1,'DisplayName','Processed');xlim([0 fs/2]);grid on;legend;xlabel('Frequency (Hz)');ylabel('Amplitude');title('Raw versus processed spectrum');saveas(fig,fullfile(cfg.resultsDir,'05_fft_comparison.png'));
+[peaks,d]=detectRPeaks(y,fs,cfg);fig=figure('Name','R peak detection');tiledlayout(3,1);nexttile;plot((0:numel(y)-1)/fs,y);hold on;plot((peaks-1)/fs,y(peaks),'rv');grid on;title('Detected R peaks');ylabel('mV');nexttile;plot(d.derivative);grid on;title('Differentiated band-pass ECG');nexttile;plot(d.integrated);grid on;title('Moving-window integrated energy');xlabel('Sample');saveas(fig,fullfile(cfg.resultsDir,'06_detection.png'));
+hr=calculateHeartRate(peaks,fs);fprintf('Detected %d peaks; average HR %.2f bpm; min %.2f; max %.2f\n',numel(peaks),hr.mean,hr.minimum,hr.maximum);
+fig=figure('Name','Heart rate');plot(hr.time,hr.instantaneous,'o-');grid on;xlabel('Time (s)');ylabel('bpm');title('Instantaneous heart rate');saveas(fig,fullfile(cfg.resultsDir,'07_heart_rate.png'));
+fig=figure('Name','RR intervals');plot(hr.time,hr.rr,'o-');grid on;xlabel('Time (s)');ylabel('RR interval (s)');title('Consecutive R-peak intervals');saveas(fig,fullfile(cfg.resultsDir,'08_rr_intervals.png'));
+metrics=calculateSignalMetrics(x,y,fs);writetable(struct2table(metrics),fullfile(cfg.resultsDir,'signal_metrics.csv'));
+fig=figure('Name','Signal quality');bar([metrics.raw_rms metrics.processed_rms;metrics.raw_std metrics.processed_std]);grid on;set(gca,'XTickLabel',{'RMS','Standard deviation'});legend('Raw','Processed');ylabel('Amplitude (mV)');title('Signal descriptor comparison');saveas(fig,fullfile(cfg.resultsDir,'09_quality.png'));
+if isfile(cfg.referenceFile),ref=readmatrix(cfg.referenceFile);ref=ref(isfinite(ref))-offset;ref=ref(ref>=1 & ref<=numel(x));perf=evaluateDetection(peaks,ref,fs,cfg.matchTolerance);disp(perf);writetable(struct2table(perf),fullfile(cfg.resultsDir,'detection_metrics.csv'));else,fprintf('No reference annotation CSV: detection scores not computed.\n');end
+fprintf('Saved figures and tables to %s\n',cfg.resultsDir);
