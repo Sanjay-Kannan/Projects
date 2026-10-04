@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(condition_monitor C)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+add_executable(condition_monitor firmware/Core/Src/main.c firmware/Middleware/dsp/dsp.c firmware/Middleware/filters/filters.c firmware/Middleware/buffers/dma_buffer.c firmware/Middleware/fault_detection/monitor.c firmware/Middleware/communication/protocol.c firmware/Simulation/sensor_sim.c firmware/Drivers/vibration/vibration_sensor.c firmware/Drivers/temperature/temperature_sensor.c firmware/Drivers/current/current_sensor.c firmware/Drivers/microphone/microphone.c)
+target_include_directories(condition_monitor PRIVATE firmware/Core/Inc firmware/Middleware/dsp firmware/Middleware/filters firmware/Middleware/buffers firmware/Middleware/fault_detection firmware/Middleware/communication firmware/Drivers/common firmware/Drivers/vibration firmware/Drivers/temperature firmware/Drivers/current firmware/Drivers/microphone firmware/Simulation)
+target_link_libraries(condition_monitor m)
+target_compile_options(condition_monitor PRIVATE -Wall -Wextra -Wpedantic)

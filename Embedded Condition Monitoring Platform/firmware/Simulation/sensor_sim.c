@@ -1,0 +1,8 @@
+#include "sensor_sim.h"
+#include <math.h>
+static SensorStatus start(void *ctx){SensorSim*s=ctx;if(!s)return SENSOR_INVALID_ARGUMENT;s->running=1;return SENSOR_OK;}
+static void stop(void *ctx){SensorSim*s=ctx;if(s)s->running=0;}
+static float noise(SensorSim*s){s->seed=1664525u*s->seed+1013904223u;return ((float)(s->seed>>8)/16777216.0f-.5f)*.03f;}
+static SensorStatus read_values(void *ctx,float*out,unsigned count){SensorSim*s=ctx;if(!s||!out||!count)return SENSOR_INVALID_ARGUMENT;if(!s->running)return SENSOR_NOT_INITIALIZED;float t=(float)s->sample_index++/s->sample_rate_hz;float w=2.0f*3.14159265358979323846f;float base=.12f*sinf(w*s->shaft_hz*t);switch(s->kind){case SIM_VIBRATION:{float v=base+noise(s);if(s->fault==1)v=.60f*sinf(w*s->shaft_hz*t)+noise(s);if(s->fault==2)v=.12f*sinf(w*s->shaft_hz*t)+.35f*sinf(2*w*s->shaft_hz*t)+noise(s);if(s->fault==3)v+=.5f*sinf(w*1800*t);if(s->fault==4)v=.45f*sinf(w*s->shaft_hz*t)+noise(s);out[0]=v;for(unsigned i=1;i<count;i++)out[i]=noise(s)*.2f;break;}case SIM_TEMPERATURE:out[0]=42.0f+(s->fault==4?40.0f*fminf(t/2.0f,1.0f):0.0f);break;case SIM_CURRENT:out[0]=.9f+(s->fault==4?2.3f:0.0f)+.08f*sinf(w*2*t);break;case SIM_MICROPHONE:out[0]=.04f+(s->fault==3?.30f:0.0f)+noise(s)*.2f;break;default:return SENSOR_INVALID_ARGUMENT;}return SENSOR_OK;}
+SensorBackend sensor_sim_backend(SensorSim*s){SensorBackend b={s,start,read_values,stop};return b;}
+void sensor_sim_configure(SensorSim*s,SimSensorKind kind,float fs,float shaft,unsigned fault,float severity,unsigned seed){if(!s)return;s->kind=kind;s->sample_index=0;s->seed=seed;s->sample_rate_hz=fs;s->shaft_hz=shaft;s->fault=fault;s->severity=severity;s->running=0;}

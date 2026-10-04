@@ -1,0 +1,4 @@
+scenario=OVERLOAD fault=OVERLOAD health=CRITICAL rms=0.3209 dominant_hz=29.30 severity=1.07
+host_fft_mean_cpu_ms=0.209 host_sim_workload_cpu_ms=29.000 fft_trials=129 processing_deadline_ms=204.800 peak_buffer_utilization_pct=100.0 missed_samples=0 buffer_overflows=0 uart_roundtrip=PASS
+reason=Current RMS 3.20 A and temperature 80.0 C indicate overload.
+uart_frame=A5010100000099010000594AA43E0000A042FED44C40149D18

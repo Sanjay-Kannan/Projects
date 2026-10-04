@@ -1,0 +1,3 @@
+# Timing analysis
+
+At 10 kHz, a 2048-sample window spans 204.8 ms. Its nominal non-overlapped processing deadline is therefore 204.8 ms. The executable averages the host CPU time for 129 FFT/feature passes so the short computation is resolvable by the host process timer. The two-block simulation deliberately keeps one block owned by the processor while the next DMA completion arrives; both ping-pong slots are therefore occupied at the measured high-water mark. This is a modeled overlap case, not a measured worst-case machine workload. Neither result represents STM32H743 execution time or target buffer pressure. Target WCET, queue wait, CPU utilization, and missed sample counts require instrumentation on target hardware.

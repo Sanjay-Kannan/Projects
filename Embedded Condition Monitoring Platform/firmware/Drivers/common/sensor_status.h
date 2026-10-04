@@ -1,0 +1,19 @@
+#ifndef SENSOR_STATUS_H
+#define SENSOR_STATUS_H
+
+typedef enum {
+    SENSOR_OK = 0,
+    SENSOR_INVALID_ARGUMENT,
+    SENSOR_NOT_INITIALIZED,
+    SENSOR_IO_ERROR,
+    SENSOR_OUT_OF_RANGE
+} SensorStatus;
+
+typedef enum {
+    SENSOR_STATE_OFF = 0,
+    SENSOR_STATE_READY,
+    SENSOR_STATE_RUNNING,
+    SENSOR_STATE_ERROR
+} SensorState;
+
+#endif
