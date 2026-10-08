@@ -1,0 +1,20 @@
+version: 4
+homeassistant: false
+permit_join: false
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+serial:
+  port: /dev/ttyACM0
+  adapter: zstack
+frontend:
+  enabled: true
+  port: 8080
+advanced:
+  channel: 15
+  network_key: GENERATE
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+  log_level: info
+device_options:
+  legacy: false

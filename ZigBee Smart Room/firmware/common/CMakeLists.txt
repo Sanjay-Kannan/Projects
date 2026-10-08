@@ -1,0 +1,6 @@
+add_library(room_logic STATIC measurement.c actuator.c zcl_values.c ../device_control/device_control.c ../coordinator/room_policy.c)
+target_include_directories(room_logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ../device_control ../coordinator)
+if(NOT MSVC)
+ target_compile_options(room_logic PRIVATE -Wall -Wextra -Wpedantic -Werror)
+ target_link_libraries(room_logic PUBLIC m)
+endif()

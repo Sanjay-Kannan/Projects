@@ -1,0 +1,15 @@
+Item,Quantity,Selected part,Notes
+MCU development board,3,ST NUCLEO-WB55RG,Sensor light and fan end devices
+Zigbee coordinator adapter,1,Sonoff ZBDongle-P (TI CC2652P),USB coordinator running Zigbee2MQTT
+Temperature/humidity sensor,1,Sensirion SHT31-DIS,3.3V I2C breakout
+Ambient light sensor,1,Vishay VEML6030,3.3V I2C breakout
+Indicator LED,1,5 mm LED,Any color
+LED resistor,1,220 ohm,Series resistor
+Fan,1,5 V brushless DC fan,Current rating determines supply
+MOSFET,1,AO3400A,Logic-level N-channel; breakout/module acceptable
+Gate resistor,1,100 ohm,Series at gate
+Gate pulldown,1,100 kohm,Gate to ground
+Fan supply,1,Regulated 5 V,Rated above fan startup current
+I2C pull-ups,2,4.7 kohm,Only if not already present on sensor breakouts
+Decoupling capacitor,1,100 uF,Across fan supply near fan/driver
+Jumper wires,1 set,2.54 mm,Check board header compatibility

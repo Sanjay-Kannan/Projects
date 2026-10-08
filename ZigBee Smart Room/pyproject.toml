@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zigbee-smart-room"
+version = "1.0.0"
+description = "MQTT-side room automation for a Zigbee smart room demonstration"
+requires-python = ">=3.10"
+dependencies = ["paho-mqtt>=2.0,<3"]
+
+[project.optional-dependencies]
+test = []
+
+[project.scripts]
+zigbee-room = "room_coordinator.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "host/coordinator"}
+
+[tool.setuptools.packages.find]
+where = ["host/coordinator"]

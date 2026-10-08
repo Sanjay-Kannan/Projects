@@ -1,0 +1,9 @@
+{
+  "host": "localhost",
+  "port": 1883,
+  "username": "",
+  "password": "",
+  "base_topic": "zigbee2mqtt",
+  "devices": {"sensor": "room_sensor", "light": "smart_light", "fan": "smart_fan"},
+  "policy": {"fan_on_c": 28.0, "fan_off_c": 26.0, "light_on_lux": 100.0, "light_off_lux": 140.0}
+}
